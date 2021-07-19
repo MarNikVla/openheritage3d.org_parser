@@ -23,16 +23,31 @@ from selenium.webdriver.firefox.options import Options
 options = Options()
 options.headless = True
 
-driver = webdriver.Firefox()
-# driver = webdriver.Firefox(options=options, executable_path=r'geckodriver.exe')
-driver.get(OPENHERITAGE_PATTERN_HTML)
-# driver = webdriver.Firefox(options=options, executable_path=r'.\geckodriver.exe')
 # driver = webdriver.Firefox()
-elem = driver.find_element_by_class_name('nextPage, pgInp')
-elem.click()
-time.sleep(6)
-elem.click()
-print(elem.tag_name)
+driver = webdriver.Firefox(options=options, executable_path=r'geckodriver.exe')
+driver.get(OPENHERITAGE_PATTERN_HTML)
+
+
+projects = driver.find_elements_by_xpath('//tbody/tr/th[1]/a')
+urls_of_projects = []
+for project in projects:
+    urls_of_projects.append(project.get_attribute('href'))
+
+def parse_single_project(url):
+ # / html / body / section / table[1] / tbody / tr[3] / td[2]
+    driver.get(url)
+    project_name = driver.find_element_by_xpath('//table/tbody/tr[3]/td[2]').text
+    print(project_name)
+    DOI = driver.find_element_by_xpath('//table/tbody/tr[2]/td[2]').text
+    print(DOI)
+    status = driver.find_element_by_xpath('//table/tbody/tr[5]/td[2]').text
+    print(status)
+
+
+if __name__ == '__main__':
+    parse_single_project('https://openheritage3d.org/project.php?id=kyma-gq49')
+
+
 # def get_html(vacancy: str, page: int = 0) -> str:
 #     url = OPENHERITAGE_PATTERN_HTML.format(
 #         page=page, vacation=vacancy)

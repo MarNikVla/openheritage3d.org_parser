@@ -1,0 +1,42 @@
+I need a python script which scrapes web pages and saves the data in a CSV file.
+The script should allow for repeated execution and update the CSV file with new data.
+
+The website root page:
+https://openheritage3d.org/data
+
+Script should iterate through each item in the "Project Name" column.
+The "Project Name" links to a page with more information about that project. I will refer to this page as the DATA page.
+From the DATA page I need the following information scraped:
+- Collection Date
+- Publication Date
+- DOI
+- Status
+- From the "Data Type" table I need the second columns of info "Size".
+The data in the "Data Type" table can have up to 3 rows.
+The possible rows headings are:
+- LiDAR - Terrestrial
+- Photogrammetry - Terrestrial
+- Photogrammetry - Aerial
+I need the information regarding the "Size" of any one of those present in the DATA page.
+
+Example of DATA page with "Data Type" table with all 3 rows
+https://openheritage3d.org/project.php?id=5b6m-ap62
+
+Example of DATA page with "Data Type" table with only 2 rows
+https://openheritage3d.org/project.php?id=ws0a-3g91
+
+Example of DATA page with "Data Type" table with only 1 rows
+https://openheritage3d.org/project.php?id=n3kf-7713
+
+The CSV file should record the following information in unique columns:
+- Project Name
+- DOI
+- Status
+- Collection Date
+- Publication Date
+- "LiDAR - Terrestrial" : should contain info from the size column
+- "Photogrammetry - Terrestrial"  : should contain info from the size column
+- "Photogrammetry - Aerial"  : should contain info from the size column
+
+Upon repeated execution, the script should compare the already scraped data in the CSV file against the website root table.
+Any new rows should be scraped and added to the CSV file.
