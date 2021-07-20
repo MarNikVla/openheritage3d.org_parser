@@ -46,6 +46,7 @@ def parse_single_project(url):
 
 if __name__ == '__main__':
     parse_single_project('https://openheritage3d.org/project.php?id=kyma-gq49')
+    driver.close()
 
 
 # def get_html(vacancy: str, page: int = 0) -> str:
