@@ -1,97 +1,69 @@
 """
-    Module contain functions for sync parsing pages of vacancy from hh.ru
+    Module contain functions for sync parsing pages of openheritage3d.org
 """
-
-from typing import List, Dict, Any
+import re
+from typing import List
 
 from bs4 import BeautifulSoup
 import requests
-import time
+
 # establishing session
 session = requests.Session()
 session.headers.update({
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:85.0) Gecko/20100101 Firefox/85.0'
 })
 
-OPENHERITAGE_PATTERN_HTML = 'https://openheritage3d.org/data'
+OPENHERITAGE_HTML = 'https://openheritage3d.org'
+OPENHERITAGE_DATA_HTML = 'https://openheritage3d.org/data'
+DOI_ROOT = 'https://doi.org'
 
 
+# Parse openheritage3d.org html_page to list of urls -> ['url1', 'url2', ..., 'url(n)']
+def parse_data_page(url: str) -> List[str]:
+    list_of_projects_urls = list()
+    text = session.get(url).text
+    soup = BeautifulSoup(text, 'html.parser')
+    projects_list = soup.find_all(href=re.compile("project.php"))
+    for project in projects_list:
+        list_of_projects_urls.append(OPENHERITAGE_HTML + '/' + project.get('href'))
 
-from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
-
-options = Options()
-options.headless = True
-
-# driver = webdriver.Firefox()
-driver = webdriver.Firefox(options=options, executable_path=r'geckodriver.exe')
-driver.get(OPENHERITAGE_PATTERN_HTML)
+    return list_of_projects_urls
 
 
-projects = driver.find_elements_by_xpath('//tbody/tr/th[1]/a')
-urls_of_projects = []
-for project in projects:
-    urls_of_projects.append(project.get_attribute('href'))
+def parse_single_project(url: str) -> dict[str: str]:
+    project_dict = dict()
+    text = session.get(url).text
+    soup = BeautifulSoup(text, 'html.parser')
 
-def parse_single_project(url):
- # / html / body / section / table[1] / tbody / tr[3] / td[2]
-    driver.get(url)
-    project_name = driver.find_element_by_xpath('//table/tbody/tr[3]/td[2]').text
-    print(project_name)
-    DOI = driver.find_element_by_xpath('//table/tbody/tr[2]/td[2]').text
-    print(DOI)
-    status = driver.find_element_by_xpath('//table/tbody/tr[5]/td[2]').text
-    print(status)
+    # add elements from "General Attributes" table to project_dict
+    project_dict['project_name'] = soup.find_all('table')[0].find(
+        string='Project Name').find_parent(
+        'td').find_next_sibling('td').text
+    project_dict['DOI'] = soup.find_all('table')[0].find(string='DOI').find_parent(
+        'td').a.get('href').lstrip()
+    project_dict['status'] = soup.find_all('table')[0].find(string='Status').find_parent(
+        'td').find_next_sibling('td').text
+
+    # add elements from "Background" table to project_dict
+    table_background = soup.find(
+        lambda tag: tag.name == 'table' and 'Background' in tag.text)
+    project_dict['collection_date'] = table_background.find(
+        string='Collection Date').find_parent('td').find_next_sibling('td').text
+    project_dict['publication_date'] = table_background.find(string='Publication Date').find_parent(
+        'td').find_next_sibling('td').text
+
+    # add elements from "Data Types" table to project_dict
+    table_datatype = soup.find(
+        lambda tag: tag.name == 'table' and 'Device Name' in tag.text)
+    data_types = table_datatype.find_all('tr')
+
+    for item in data_types:
+        key = item.td.text
+        value = item.td.find_next_sibling('td').text
+        project_dict.update(((key, value),))
+
+    return project_dict
 
 
 if __name__ == '__main__':
-    parse_single_project('https://openheritage3d.org/project.php?id=kyma-gq49')
-    driver.close()
-
-
-# def get_html(vacancy: str, page: int = 0) -> str:
-#     url = OPENHERITAGE_PATTERN_HTML.format(
-#         page=page, vacation=vacancy)
-#     html = session.get(url).text
-#     return html
-#
-# # Parse hh.ru html_page to list ['vacancy', 'vacancy_link']
-# def parse_vacancy(vacancy: str, page: int = None) -> List[Dict[str, Any]]:
-#     data = []
-#     text = get_html(vacancy=vacancy, page=page)
-#     soup = BeautifulSoup(text, 'html.parser')
-#     vacancies_list = soup.find_all("div",
-#                                   {'class': ['vacancy-serp-item', 'vacancy-serp-item_premium']})
-#
-#     for item in vacancies_list:
-#         vacancy_link = item.find('a', {'class': ['bloko-link', 'HH-LinkModifier']}).get('href')
-#         vacancy_desc = item.find('a', {'class': ['bloko-link', 'HH-LinkModifier']}).text
-#         vacancy_link_strip_query = vacancy_link.partition('?query')[0]
-#         data.append({
-#             'vacancy': vacancy_desc,
-#             'vacancy_link': vacancy_link_strip_query,
-#         })
-#     return data
-#
-#
-# def get_last_page(vacancy) -> int:
-#     first_page = get_html(vacancy)
-#     soup = BeautifulSoup(first_page, 'html.parser')
-#     last_page = soup.find_all("a",
-#                               {'class': ['bloko-button', 'HH-Pager-Control']})[-2].get_text()
-#     return int(last_page)
-#
-# # Make list of urls of giving vacancy
-# def url_of_vacancies_to_list(vacancy: str, amount_pages: int = 3) -> List[str]:
-#     if amount_pages:
-#         last_page = amount_pages
-#     else:
-#         last_page = get_last_page(vacancy)
-#
-#     list_of_urls = list()
-#     for page in range(last_page):
-#         data = parse_vacancy(vacancy, page)
-#         for item in data:
-#             list_of_urls.append(item['vacancy_link'])
-#
-#     return list_of_urls
+    parse_single_project('https://openheritage3d.org/project.php?id=ws0a-3g91')
