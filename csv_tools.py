@@ -11,11 +11,31 @@ def is_file_exist(fpath):
     return file.is_file() and file.stat().st_size > 0
 
 
+csv_columns = ['project_name',
+               'DOI',
+               'status',
+               'collection_date',
+               'publication_date',
+               # possible data types fields below
+               'LiDAR - Terrestrial',
+               'LiDAR - Aerial',
+               'Photogrammetry - Terrestrial',
+               'Photogrammetry - Aerial',
+               'Photogrammetry',
+               'Not available',
+               'Data Derivatives',
+               'Data Derivatives - DSM/ORTHO',
+               'Data Derivatives - 3D photogrammetry',
+               'Data Derivatives - 3D Photogrammetry',
+               'Data Derivative - 3D Photogrammetry',
+               'Photogrammetry . Aerial',
+               ]
+
 def csv_writer(data: Dict[str, str]):
     # print(type(data))
     with open(path_to_write, 'a', newline='', encoding='utf-8') as csvfile:
-        csv_columns = ['project_name', 'DOI', 'status', 'collection_date', 'publication_date',
-                       'LiDAR - Terrestrial', 'Photogrammetry - Terrestrial', 'Photogrammetry - Aerial']
+        # csv_columns = ['project_name', 'DOI', 'status', 'collection_date', 'publication_date',
+        #                'LiDAR - Terrestrial', 'Photogrammetry - Terrestrial', 'Photogrammetry - Aerial']
 
         writer = csv.DictWriter(csvfile, fieldnames=csv_columns)
         if not is_file_exist(path_to_write):
@@ -25,8 +45,15 @@ def csv_writer(data: Dict[str, str]):
 
 def csv_reader() -> csv.DictReader:
     with open(path_to_write, 'a', newline='', encoding='utf-8') as csvfile:
-        csv_columns = ['project_name', 'DOI', 'status', 'collection_date', 'publication_date',
-                       'LiDAR - Terrestrial', 'Photogrammetry - Terrestrial', 'Photogrammetry - Aerial']
+        # csv_columns = ['project_name',
+        #                'DOI',
+        #                'status',
+        #                'collection_date',
+        #                'publication_date',
+        #                'LiDAR - Terrestrial',
+        #                'Photogrammetry - Terrestrial',
+        #                'Photogrammetry - Aerial',
+        #                'Photogrammetry']
 
         reader = csv.DictReader(csvfile, fieldnames=csv_columns)
         print(type(reader))
@@ -36,5 +63,5 @@ def csv_reader() -> csv.DictReader:
 if __name__ == '__main__':
     from test import parse_single_project
 
-    csv_writer(parse_single_project('https://openheritage3d.org/project.php?id=ws0a-3g91'))
+    csv_writer(parse_single_project('https://openheritage3d.org/project.php?id=n3kf-7713'))
     csv_reader()
