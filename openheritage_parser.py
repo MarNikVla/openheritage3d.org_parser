@@ -18,8 +18,10 @@ OPENHERITAGE_DATA_HTML = 'https://openheritage3d.org/data'
 DOI_ROOT = 'https://doi.org'
 
 
-# Parse openheritage3d.org html_page to list of urls -> ['url1', 'url2', ..., 'url(n)']
-def parse_data_page(url: str) -> List[str]:
+# Parse openheritage3d.org/data projects page
+# to list of projects urls -> ['url1', 'url2', ..., 'url(n)']
+# return list of projects urls
+def parse_data_page(url: str = OPENHERITAGE_DATA_HTML) -> List[str]:
     list_of_projects_urls = list()
     text = session.get(url).text
     soup = BeautifulSoup(text, 'html.parser')
@@ -30,6 +32,11 @@ def parse_data_page(url: str) -> List[str]:
     return list_of_projects_urls
 
 
+# Parse single project url (example: https://openheritage3d.org/project.php?id=ws0a-3g91)
+#  to dict (example: project_dict(project_name:'Bagan - Loka Hteik Pan',
+#                                 DOI:'https://doi.org/10.26301/05r8-we91',
+#                                 ...)
+# return project_dict
 def parse_single_project(url: str) -> dict[str: str]:
     project_dict = dict()
     text = session.get(url).text
@@ -63,7 +70,3 @@ def parse_single_project(url: str) -> dict[str: str]:
         project_dict.update(((key, value),))
 
     return project_dict
-
-
-if __name__ == '__main__':
-    parse_single_project('https://openheritage3d.org/project.php?id=ws0a-3g91')

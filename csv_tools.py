@@ -39,9 +39,3 @@ def csv_writer(data: Dict[str, str]):
         if not is_file_exist(path_to_file):
             writer.writeheader()
         writer.writerow(data)
-
-
-# if __name__ == '__main__':
-#     from openheritage_parser import parse_single_project
-    # csv_writer(parse_single_project('https://openheritage3d.org/project.php?id=n3kf-7713'))
-
